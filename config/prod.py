@@ -41,7 +41,7 @@ DATABASES.update(
             'NAME': APP_CODE,  # noqa
             'USER': 'root',
             'PASSWORD': 'EUAJGoijfp',
-            'HOST': '172.27.16.29',
+            'HOST': '172.27.16.129',
             'PORT': '3306',
         },
     }
