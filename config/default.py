@@ -132,6 +132,7 @@ if IS_USE_CELERY:
     import djcelery
     INSTALLED_APPS += (
         'djcelery',
+        'rest_framework'
     )
     djcelery.setup_loader()
     CELERY_ENABLE_UTC = False

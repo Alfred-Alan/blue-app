@@ -11,6 +11,50 @@ an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express o
 specific language governing permissions and limitations under the License.
 """
 
-# from django.db import models
+from django.db import models
 
 # Create your models here.
+
+class Scripts(models.Model):
+    scriptname=models.CharField(max_length=50,verbose_name='脚本名称')
+    scriptcontent=models.TextField(verbose_name='脚本内容')
+    status_choice = [(1,'shell脚本'),(2,'bat脚本'),(3,'perl脚本'),(4,'python脚本'),(5,'Powershell脚本')]
+    script_type = models.IntegerField(choices=status_choice,default=1,verbose_name='脚本类型')
+
+    def __str__(self):
+        return self.scriptname
+
+    class Meta:
+        db_table = "Scripts"
+        verbose_name = "脚本表"
+        verbose_name_plural = verbose_name
+
+class Hosts(models.Model):
+    hostname=models.CharField(max_length=50,verbose_name='主机名称')
+    hostip=models.CharField(max_length=50,verbose_name='主机IP')
+    biz_id=models.CharField(max_length=50,default=2,verbose_name='业务id')
+
+
+    def __str__(self):
+        return self.hostname
+
+    class Meta:
+        db_table = "Hosts"
+        verbose_name = "主机表"
+        verbose_name_plural = verbose_name
+
+class Apps(models.Model):
+    bk_app_code=models.CharField(max_length=200,verbose_name='app_code')
+    bk_app_name=models.CharField(max_length=200,verbose_name='app_name')
+    introduction=models.CharField(max_length=200,verbose_name='应用介绍')
+    creator=models.CharField(max_length=200,verbose_name='创建者')
+    developer=models.CharField(max_length=200,verbose_name='开发人员')
+    server = models.IntegerField(verbose_name='隶属服务器')
+
+    def __str__(self):
+        return self.bk_app_code
+
+    class Meta:
+        db_table = "Apps"
+        verbose_name = "应用表"
+        verbose_name_plural = verbose_name

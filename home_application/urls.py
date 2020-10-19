@@ -19,4 +19,11 @@ urlpatterns = (
     url(r'^$', views.home),
     url(r'^dev-guide/$', views.dev_guide),
     url(r'^contact/$', views.contact),
+    url(r'^app_logs/$', views.app_logs),
+    url(r'^search_logs/$', views.search_logs),
+    url(r'^host/$', views.host_view),
+    url(r'^saas_app/$', views.saas_app),
+    url(r'^show_logs/$', views.show_logs),
+    url(r'^app_database/$', views.app_database),
+    # url(r'^save_apps/$', views.save_apps),
 )
