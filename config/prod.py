@@ -38,11 +38,11 @@ DATABASES.update(
     {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
-            'NAME': os.environ.get('DB_NAME'),
-            'USER': os.environ.get('DB_USERNAME'),
-            'PASSWORD': os.environ.get('DB_PASSWORD'),
-            'HOST': os.environ.get('DB_HOST'),
-            'PORT': os.environ.get('DB_PORT'),
+            'NAME': APP_CODE,  # 数据库名
+            'USER': 'yangxin',  # 数据库用户
+            'PASSWORD': '123456',  # 数据库密码
+            'HOST': '39.107.99.155',  # 数据库主机
+            'PORT': '3306',  # 数据库端口
         },
     }
 )
