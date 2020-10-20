@@ -410,6 +410,14 @@
             }
         }
     </style>
+    <style lang="postcss">
+    .test-dom {
+        height: 300px;
+        line-height: 300px;
+        border: 1px solid #eee;
+        text-align: center;
+    }
+    </style>
     <!-- 引入 bk-magic-vue 组件库样式 -->
     <link rel="stylesheet" href="https://magicbox.bk.tencent.com/static_api/v3/components_vue/2.0/bk-magic-vue.css">
     <script>
@@ -548,7 +556,7 @@
                                 </p>
                                  <bk-button ext-cls="mr5" theme="primary" title="提交" @click.stop.prevent="search_logs">查询</bk-button>
                             </div>
-                            <div style="margin-left: 10%" v-if="show_datas">
+                                <div style="margin-left: 10%" v-if="show_datas">
                                 <bk-tab :active.sync="active" :type="currentType" style="margin-top: 20px;" :before-toggle="change_tab">
                                     <bk-tab-panel
                                         v-for="(logs, index) in logs_arry"
@@ -559,7 +567,7 @@
                                             <span v-else>该应用下无日志</span>
                                         {% endverbatim %}
                                         <br>
-                                        <bk-virtual-scroll ref="numberVirtualScroll"
+                                        <!--<bk-virtual-scroll ref="numberVirtualScroll"
                                             class="number-virtual-scroll"
                                             :show-index="true"
                                             :item-height="16"
@@ -567,22 +575,27 @@
                                             <template slot-scope="item">
                                                 <span class="item-txt">{{item.data}}</span>
                                             </template>
-                                        </bk-virtual-scroll>
+                                        </bk-virtual-scroll>-->
                                         <div style="background-color: #0d3349;color: white" v-if="is_show_content">
-                                            <p v-for="(text,index) in log_content">
-                                                {% verbatim %}
-                                                {{ index }}&nbsp;{{ text }}
-                                                {% endverbatim %}
-                                            </p>
+                                                <p v-for="(text,index) in log_content">
+                                                    {% verbatim %}
+                                                    {{ index }}&nbsp;{{ text }}
+                                                    {% endverbatim %}
+                                                </p>
                                         </div>
-                                        <div v-if="logs.filesize">
-                                            <bk-button ext-cls="mr5" theme="primary" title="关闭" @click.stop.prevent="close_logs()" v-if="is_show_button">关闭</bk-button>
-                                            <bk-button ext-cls="mr5" theme="primary" title="查看" @click.stop.prevent="show_logs()" v-else>查看</bk-button>
+                                            <div v-if="logs.filesize">
+                                                <bk-button ext-cls="mr5" theme="primary" title="关闭" @click.stop.prevent="close_logs()" v-if="is_show_button">关闭</bk-button>
+                                                <bk-button ext-cls="mr5" theme="primary" title="查看" @click.stop.prevent="show_logs()" v-else>查看</bk-button>
+                                            </div>
+
+                                        <div class="test-dom" v-show="contentLoading" v-bkloading="{isLoading: contentLoading, theme: 'primary', zIndex: 10}">
                                         </div>
 
                                     </bk-tab-panel>
                                 </bk-tab>
                             </div>
+                                <div class="test-dom" v-bkloading="{isLoading: basicLoading, theme: 'primary', zIndex: 10}">
+                                </div>
                         </div>
                         <template slot="footer">
                             <div class="monitor-navigation-footer">
@@ -607,6 +620,8 @@
                     el: '#app',
                     data () {
                         return {
+                            contentLoading:0,
+                            basicLoading: 0,
                             script_id:1,
                             site_url:window.location.host,
                             date:new Date().getFullYear(),
@@ -805,6 +820,7 @@
                                     title: '请选择主机'
                                 })
                             }
+                            this.contentLoading=1;
                             var params={
                                 "hid":this.host,
                                 "app_code":this.app_code,
@@ -816,10 +832,69 @@
                                 params:params
                             });
                             console.log(res.data);
-                            this.log_content = res.data.content_list;
-                            this.is_show_button = 1;
-                            this.is_show_content=1;
-                            {#this.$refs.numberVirtualScroll.setListData(res.data.content_list);#}
+                            this.cycle_log_content_result(res.data.biz_id,res.data.job_id);
+                        },
+                        cycle_logs_result(biz_id,job_id){
+                            const that = this;
+                            const timer = window.setInterval(() => {
+                                setTimeout(
+                                    async function () {
+                                        await axios({
+                                            url: site_url + 'script_result/',
+                                            metheod: 'get',
+                                            params:{
+                                                "biz_id":biz_id,
+                                                "job_id":job_id
+                                            }
+                                        }).then(res => {
+                                            if (res.data.code === 200 ) {
+                                                var larray=[];
+                                                for(i=0;i<res.data.data.length;i++){
+                                                    larray.push({ name: res.data.data[i].filename, label: res.data.data[i].filename, count: i,filesize:res.data.data[i].filesize})
+                                                }
+                                                that.logs_arry = larray;
+                                                that.show_datas = 1;
+                                                that.basicLoading =0;
+                                                clearInterval(timer);
+                                            }
+                                        })
+                                }
+                                , 0)
+                            }, 2000);
+                            // 清除定时器
+                            this.$once('hook:beforeDestroy', () => {
+                              clearInterval(timer)
+                            });
+                        },
+                        cycle_log_content_result(biz_id,job_id){
+                            const that = this;
+                            const timer = window.setInterval(() => {
+                                setTimeout(
+                                    async function () {
+                                        await axios({
+                                            url: site_url + 'log_content_result/',
+                                            metheod: 'get',
+                                            params:{
+                                                "biz_id":biz_id,
+                                                "job_id":job_id
+                                            }
+                                        }).then(res => {
+                                            if (res.data.code === 200 ) {
+
+                                                that.log_content = res.data.content_list;
+                                                that.is_show_button = 1;
+                                                that.is_show_content=1;
+                                                that.contentLoading = 0;
+                                                clearInterval(timer);
+                                            }
+                                        })
+                                }
+                                , 0)
+                            }, 2000);
+                            // 清除定时器
+                            this.$once('hook:beforeDestroy', () => {
+                              clearInterval(timer)
+                            });
                         },
                         async search_logs(){
                             if(!this.app_code){
@@ -834,23 +909,20 @@
                                 });
                                 return false
                             }
+
+                            this.basicLoading = 1;
                             var params={
                                 "hid":this.host,
                                 "app_code":this.app_code,
                                 "script_id":this.script_id,
                             };
-                            console.log(params);
                             const res = await axios({
                                 url: site_url + 'search_logs/',
                                 metheod: 'get',
                                 params:params
                             });
-                            var larray=[];
-                            for(i=0;i<res.data.data.length;i++){
-                                larray.push({ name: res.data.data[i].filename, label: res.data.data[i].filename, count: i,filesize:res.data.data[i].filesize})
-                            }
-                            this.logs_arry = larray;
-                            this.show_datas = 1
+
+                            this.cycle_logs_result(res.data.biz_id,res.data.job_id);
                         },
                         async get_app(){
                             const res = await axios({

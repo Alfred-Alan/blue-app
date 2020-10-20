@@ -21,9 +21,12 @@ urlpatterns = (
     url(r'^contact/$', views.contact),
     url(r'^app_logs/$', views.app_logs),
     url(r'^search_logs/$', views.search_logs),
+    url(r'^script_result/$', views.logs_result),
+    url(r'^log_content_result/$', views.log_content_result),
     url(r'^host/$', views.host_view),
     url(r'^saas_app/$', views.saas_app),
     url(r'^show_logs/$', views.show_logs),
     url(r'^app_database/$', views.app_database),
-    # url(r'^save_apps/$', views.save_apps),
+    url(r'^search_database/$', views.search_database),
+    url(r'^script_callback/$', views.script_callback_view),
 )

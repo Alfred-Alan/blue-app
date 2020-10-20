@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 bk_app_code = 'blue-app'
 bk_app_secret = '837d12fb-a738-4c04-9f61-c724fb2dddd8'
-bk_token = 'F_uo0Iu2wg_FHaQR_xSPevIgWJdvt7IMofmTlOAuSRU'
+bk_token = '9q4LSDNHUkeNJmo53Lr-uCsJlGtHlgaSwGSP2QqgCuE'
 from home_application.models import Scripts, Hosts
 from home_application.logic import scriptfun
 
@@ -71,7 +71,7 @@ def host_view(request):
     hostser=HostsSerializers(hostsobj,many=True)
     return JsonResponse({'code':200,'data':hostser.data})
 
-
+from .celery_tasks import async_get_job_status
 
 def search_logs(request):
     hid = request.GET.get('hid', '')
@@ -86,17 +86,40 @@ def search_logs(request):
     if not job_id:
         return JsonResponse({'code': 502, 'msg': '执行失败'})
 
-    status_dict = scriptfun.get_job_status(hostobj.biz_id, job_id)
-    if not status_dict:
-        return JsonResponse({'code': 502, 'msg': '查询结果失败'})
-    print(status_dict)
+    # status_dict = scriptfun.get_job_status(hostobj.biz_id, job_id)
+    # if not status_dict:
+    #     return JsonResponse({'code': 502, 'msg': '查询结果失败'})
+    # print(status_dict)
 
-    log_content=scriptfun.get_job_result(hostobj.biz_id,job_id)
+    async_get_job_status.delay(hostobj.biz_id, job_id)
+
+    return JsonResponse({'code': 200, 'msg': 'success', 'job_id': job_id,'biz_id':hostobj.biz_id})
+
+def logs_result(request):
+    biz_id = request.GET.get('biz_id','')
+    job_id = request.GET.get('job_id','')
+
+    log_content=scriptfun.get_job_result(biz_id,job_id)
     data=[]
-    for filename,filesize in eval(log_content):
-        data.append({"filename":filename,"filesize":filesize})
-    print(data)
-    return JsonResponse({'code': 200, 'msg': 'success', 'data': data})
+    if log_content:
+        for filename,filesize in eval(log_content):
+            data.append({"filename":filename,"filesize":filesize})
+        print(data)
+        return JsonResponse({'code': 200, 'msg': 'success', 'data': data})
+    else:
+        return JsonResponse({'code': 400, 'msg': 'nothing'})
+
+def log_content_result(request):
+    biz_id = request.GET.get('biz_id','')
+    job_id = request.GET.get('job_id','')
+
+    log_content=scriptfun.get_job_result(biz_id,job_id)
+    if log_content:
+        return JsonResponse({'code': 200, 'msg': 'success', 'content_list': eval(log_content)})
+    else:
+        return JsonResponse({'code': 400, 'msg': 'nothing'})
+
+
 
 def show_logs(request):
     hid = request.GET.get('hid', '')
@@ -112,14 +135,21 @@ def show_logs(request):
     if not job_id:
         return JsonResponse({'code': 502, 'msg': '执行失败'})
 
-    status_dict = scriptfun.get_job_status(hostobj.biz_id, job_id)
-    if not status_dict:
-        return JsonResponse({'code': 502, 'msg': '查询结果失败'})
-    print(status_dict)
+    # status_dict = scriptfun.get_job_status(hostobj.biz_id, job_id)
+    # if not status_dict:
+    #     return JsonResponse({'code': 502, 'msg': '查询结果失败'})
+    # print(status_dict)
+    async_get_job_status.delay(hostobj.biz_id, job_id)
 
-    log_content=scriptfun.get_job_result(hostobj.biz_id,job_id)
-    print(log_content)
-    return JsonResponse({'code': 200, 'msg': 'success','content_list':eval(log_content)})
+    return JsonResponse({'code': 200, 'msg': 'success', 'job_id': job_id,'biz_id':hostobj.biz_id})
+
+def script_callback_view(request):
+    print(request)
+    return JsonResponse({'code':200})
 
 def search_database(request):
+
+    hostobj=Hosts.objects.get(pk=1)
+    scriptfun.excute_script(hostobj.hostip, hostobj.biz_id, 'print(1)')
+
     return JsonResponse({'code': 200, 'msg': 'success',})

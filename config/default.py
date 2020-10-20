@@ -86,13 +86,14 @@ STATICFILES_DIRS = [
 # worker: python manage.py celery worker -l info
 # beat: python manage.py celery beat -l info
 # 不使用时，请修改为 False，并删除项目目录下的 Procfile 文件中 celery 配置
-IS_USE_CELERY = False
+IS_USE_CELERY = True
 
 # CELERY 并发数，默认为 2，可以通过环境变量或者 Procfile 设置
 CELERYD_CONCURRENCY = os.getenv('BK_CELERYD_CONCURRENCY', 2)  # noqa
 
 # CELERY 配置，申明任务的文件路径，即包含有 @task 装饰器的函数文件
 CELERY_IMPORTS = (
+    'home_application.celery_tasks'
 )
 
 # load logging settings
@@ -100,7 +101,7 @@ LOGGING = get_logging_config_dict(locals())
 
 # 初始化管理员列表，列表中的人员将拥有预发布环境和正式环境的管理员权限
 # 注意：请在首次提测和上线前修改，之后的修改将不会生效
-INIT_SUPERUSER = []
+INIT_SUPERUSER = ["admin"]
 
 
 # 使用mako模板时，默认打开的过滤器：h(过滤html)

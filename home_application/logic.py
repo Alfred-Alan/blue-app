@@ -9,9 +9,9 @@ logger = logging.getLogger(__name__)
 
 bk_app_code = 'blue-app'
 bk_app_secret = '837d12fb-a738-4c04-9f61-c724fb2dddd8'
-bk_token = 'F_uo0Iu2wg_FHaQR_xSPevIgWJdvt7IMofmTlOAuSRU'
+bk_token = '9q4LSDNHUkeNJmo53Lr-uCsJlGtHlgaSwGSP2QqgCuE'
 
-class script_func:
+class script_obj:
     # 执行脚本
     def excute_script(self,hostip, biz_id, scriptcontent):
 
@@ -25,7 +25,8 @@ class script_func:
             'ip_list': [{
                 "bk_cloud_id": 0,
                 "ip": hostip
-            }]
+            }],
+            'bk_callback_url':"http://dev.paas.guodong.com:8086/script_callback/",
         }
         excute_data = client.job.fast_execute_script(kwargs)
         if excute_data.get('result', False):
@@ -90,4 +91,5 @@ class script_func:
             logger.error(u'执行任务失败：%s' % result.get('message'))
             return False
 
-scriptfun = script_func()
+scriptfun = script_obj()
+
